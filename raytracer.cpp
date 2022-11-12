@@ -23,29 +23,30 @@ int main(int argc, char* argv[])
 
     
     cameras = scene.cameras;
-    parser::Camera camera = cameras[0];
-    
-    int width = camera.image_width;
-    int height = camera.image_height;
+    for(auto camera : cameras){
+         cout << "ilgaz" << endl;
+        int width = 50;
+        int height = 50;
 
-    unsigned char* image = new unsigned char [width * height * 3];
-    Vectors::Vec3f talha;
+        unsigned char* image = new unsigned char [width * height * 3];
+        Vectors::Vec3f talha;
 
-    int px = 0;
-    Ray ray(camera);
-    for (int i = 0; i < height; ++i)
-    {
-        for (int j = 0; j < width; ++j)
+        int px = 0;
+        Ray ray(camera);
+        for (int i = 0; i < height; ++i)
         {
-            ray = ray.generateRay(j, i, camera);
-            talha = ray.direction + ray.origin;
-            cout << talha;
-            //image[pixel++] = 0;
-            //image[pixel++] = 0;
-            //image[pixel++] = 0;
+            for (int j = 0; j < width; ++j)
+            {
+                ray = ray.generateRay(j, i, camera);
+                talha = ray.direction + ray.origin;
+                cout << talha;
+                //image[pixel++] = 0;
+                //image[pixel++] = 0;
+                //image[pixel++] = 0;
+            }
         }
+        const char * outputFileName = camera.image_name.c_str();
+        write_ppm(outputFileName, image, width, height);
     }
-
-    write_ppm("test.ppm", image, width, height);
 
 }
