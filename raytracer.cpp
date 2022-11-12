@@ -23,13 +23,11 @@ int main(int argc, char* argv[])
     scene.loadFromXml(argv[1]);
     vector<parser::Camera> cameras;
     vector<Vec3f> fistik = scene.vertex_data;
-    
     cameras = scene.cameras;
     for(auto camera : cameras){
-         cout << "ilgaz" << endl;
         int width = camera.image_width;
         int height = camera.image_height;
-
+        
         unsigned char* image = new unsigned char [width * height * 3];
 
         int pixel = 0;
