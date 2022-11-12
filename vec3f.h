@@ -3,7 +3,7 @@
 #include <string>
 #include <iostream>
 #include <vector>
-#include<math.h>
+#include <math.h>
 #include "parser.h"
 
 using namespace std;
@@ -42,6 +42,13 @@ class Vec3f{
 
             return *this;
         }
+        // Vec3f operator=(parser::Vec3i a){
+        //     x = a.x;
+        //     y = a.y;
+        //     z = a.z;
+
+        //     return *this;
+        // }
         Vec3f operator-(Vec3f a){
             Vec3f result;
             result.x = x - a.x;

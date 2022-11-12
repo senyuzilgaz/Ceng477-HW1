@@ -5,7 +5,9 @@
 #include "vec3f.h"
 #include "Ray.h"
 #include<string>
+#include "utilizer.h"
 
+using namespace utilizer;
 using namespace std;
 using namespace Vectors;
 using namespace Rays;
@@ -25,24 +27,23 @@ int main(int argc, char* argv[])
     cameras = scene.cameras;
     for(auto camera : cameras){
          cout << "ilgaz" << endl;
-        int width = 50;
-        int height = 50;
+        int width = camera.image_width;
+        int height = camera.image_height;
 
         unsigned char* image = new unsigned char [width * height * 3];
-        Vectors::Vec3f talha;
 
-        int px = 0;
+        int pixel = 0;
         Ray ray(camera);
         for (int i = 0; i < height; ++i)
         {
             for (int j = 0; j < width; ++j)
             {
-                ray = ray.generateRay(j, i, camera);
-                talha = ray.direction + ray.origin;
-                cout << talha;
-                //image[pixel++] = 0;
-                //image[pixel++] = 0;
-                //image[pixel++] = 0;
+                Vec3f color;
+                ray = ray.generateRay(i, j, camera);
+                color = calculateColor(ray, scene);
+                image[pixel++] = color.x;
+                image[pixel++] = color.y;
+                image[pixel++] = color.z;
             }
         }
         const char * outputFileName = camera.image_name.c_str();
