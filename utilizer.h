@@ -75,7 +75,7 @@ namespace utilizer{
 			N = P - scene.vertex_data[scene.spheres[minI].center_vertex_id];
 			L = L.normalize();
 			N = N.normalize();
-			c = c * (L * N);
+			c = Vec3f(255,0,0);
 		}
 		else{
 			
