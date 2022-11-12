@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
     parser::Scene scene;
     scene.loadFromXml(argv[1]);
     vector<parser::Camera> cameras;
-
+    vector<Vec3f> fistik = scene.vertex_data;
     
     cameras = scene.cameras;
     for(auto camera : cameras){

@@ -3,16 +3,13 @@
 
 #include <string>
 #include <vector>
+#include "vec3f.h"
 
+using namespace Vectors;
 namespace parser
 {
     //Notice that all the structures are as simple as possible
     //so that you are not enforced to adopt any style or design.
-    struct Vec3f
-    {
-        float x, y, z;
-    };
-
     struct Vec3i
     {
         int x, y, z;

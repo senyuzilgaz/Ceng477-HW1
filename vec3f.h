@@ -22,11 +22,12 @@ class Vec3f{
             y=b;
             z=c;
         }
+        /*
         Vec3f(parser::Vec3f vec3f){
             x = vec3f.x;
             y = vec3f.y;
             z = vec3f.z;
-        }
+        }*/
         Vec3f operator+(Vec3f a){
             Vec3f result;
             result.x = x + a.x;

@@ -32,9 +32,9 @@ class Ray{
             top = camera.near_plane.w;
             width = camera.image_width;
             height = camera.image_height;
-            gaze = Vec3f(camera.gaze);
-            up = Vec3f(camera.up);
-            cameraPos = Vec3f(camera.position);
+            gaze = camera.gaze;
+            up = camera.up;
+            cameraPos = camera.position;
 
             w = (gaze * -1).normalize();
             v = up.normalize();
