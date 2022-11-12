@@ -52,15 +52,9 @@ namespace utilizer{
 		return t;
 	}
 	Vec3f calculateColor(Ray &ray, parser::Scene &scene){
-		int i;
-		Vec3f c;
-		float minT = 90000; // some large number
-		float t;
-		Vec3f L,N;
-		Vec3f P;
-		int minI;
-		
-		minI = -1;
+		int i, minI = -1;
+		Vec3f c, L, N, P;
+		float t, minT = 90000; // some large number		
 		for (i=0; i<scene.spheres.size(); i++)
 		{
 			t = intersectSphere(ray, scene.spheres[i], scene.vertex_data);
@@ -73,10 +67,8 @@ namespace utilizer{
 				minT = t;
 			}
 		}
-
 		if (minI!=-1)
 		{
-
 			P = ray.origin + (ray.direction * minT);
 			L = scene.ambient_light - P;
 			N = P - scene.vertex_data[scene.spheres[minI].center_vertex_id];
