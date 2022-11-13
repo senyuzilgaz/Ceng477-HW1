@@ -42,13 +42,14 @@ class Vec3f{
 
             return *this;
         }
-        // Vec3f operator=(parser::Vec3i a){
-        //     x = a.x;
-        //     y = a.y;
-        //     z = a.z;
+        Vec3f operator/(float a){
+            Vec3f result;
+            result.x = x / a;
+            result.y = y / a;
+            result.z = z / a;
 
-        //     return *this;
-        // }
+            return result;
+        }
         Vec3f operator-(Vec3f a){
             Vec3f result;
             result.x = x - a.x;
