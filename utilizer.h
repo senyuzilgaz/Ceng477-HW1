@@ -83,49 +83,51 @@ namespace utilizer{
 
 		return info;
 	}
-	Vec3f calculateColor(Ray &ray, parser::Scene &scene, int lightIndex, parser::Camera &camera){
+	Vec3f calculateColor(Ray &ray, parser::Scene &scene, parser::Camera &camera){
 		int material, minI= -1;
 		Vec3f color, intersectionPoint, surfaceNormal, ambient, diffuse, specular;
 		float t, minT = 90000; // some large number
 		//Intersect with spheres
-		for (int sphereIndex=0; sphereIndex<scene.spheres.size(); sphereIndex++)
-		{
-			Intersect info = intersectSphere(ray, scene.spheres[sphereIndex], scene.vertex_data);
-			if (info.isHit && info.t<minT && info.t>0)
+		vector <parser::PointLight> pointLights = scene.point_lights;
+		
+		for(int indexLight = 0; indexLight < pointLights.size(); indexLight++){
+		
+			for (int sphereIndex=0; sphereIndex<scene.spheres.size(); sphereIndex++)
 			{
-				minI = sphereIndex;
-				minT = info.t;
-				intersectionPoint = info.intersectPoint;
-				surfaceNormal = info.surfaceNormal;
+				Intersect info = intersectSphere(ray, scene.spheres[sphereIndex], scene.vertex_data);
+				if (info.isHit && info.t<minT && info.t>0)
+				{
+					minI = sphereIndex;
+					minT = info.t;
+					intersectionPoint = info.intersectPoint;
+					surfaceNormal = info.surfaceNormal;
+				}
 			}
-		}
 
-		if (minI!=-1)
-		{
-			int temp = scene.spheres[minI].material_id -1; //Ambient
-			auto material = scene.materials[temp];
-			auto pointLight = scene.point_lights[lightIndex];
-			Vec3f ambientLight = scene.ambient_light;
+			if (minI!=-1)
+			{
+				int temp = scene.spheres[minI].material_id -1; //Ambient
+				auto material = scene.materials[temp];
+				auto pointLight = scene.point_lights[indexLight];
+				Vec3f ambientLight = scene.ambient_light;
+				
+				
+				ambient = calculateAmbiance(material, ambientLight);
+				diffuse = calculateDiffuse(material, pointLight, intersectionPoint, surfaceNormal);
+				specular = calculateSpecular(material, pointLight, intersectionPoint, surfaceNormal, camera.position);
+
+				color = color + ambient + diffuse + specular;
+
+			}
+			else{
+				color = Vec3f((float)scene.background_color.x, 
+							(float)scene.background_color.y, 
+							(float)scene.background_color.z);
+			}
 			
-			
-			ambient = calculateAmbiance(material, ambientLight);
-			diffuse = calculateDiffuse(material, pointLight, intersectionPoint, surfaceNormal);
-			specular = calculateSpecular(material, pointLight, intersectionPoint, surfaceNormal, camera.position);
-
-			color = ambient + diffuse + specular;
-
-		}
-		else{
-			color = Vec3f((float)scene.background_color.x, 
-						  (float)scene.background_color.y, 
-						  (float)scene.background_color.z);
-		}
-		return color;	
-	}		
-		
-
-		
-	
+		}		
+		return color;		
+	}
 }
 
 #endif
