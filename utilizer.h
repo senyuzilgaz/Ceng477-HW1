@@ -62,7 +62,7 @@ namespace utilizer{
 
 		return info;
 	}
-	Vec3f calculateColor(Ray &ray, parser::Scene &scene, int lightIndex){
+	Vec3f calculateColor(Ray &ray, parser::Scene &scene, int lightIndex, parser::Camera &camera){
 		int material, minI= -1;
 		Vec3f c, intersectionPoint, surfaceNormal, irradiance, diffuse, line, normal;
 		float t, minT = 90000; // some large number
@@ -82,17 +82,27 @@ namespace utilizer{
 
 		if (minI!=-1)
 		{
-			material = scene.spheres[minI].material_id -1; //Ambient
-			c = scene.materials[material].ambient;
+			int temp = scene.spheres[minI].material_id -1; //Ambient
+			auto material = scene.materials[temp];
+			c = material.ambient;
 			c = c.scalar(scene.ambient_light);
 
 
-			line = scene.point_lights[lightIndex].position - intersectionPoint  ;
+			line = scene.point_lights[lightIndex].position - intersectionPoint; //Diffuse
 			irradiance = line * line != 0.0 ?  scene.point_lights[lightIndex].intensity / ( line * line): Vec3f(0,0,0);
 			normal = line.normalize();
-			float dot = normal * surfaceNormal;
-			if (dot < 0) dot = 0;
-			c = c + (scene.materials[material].diffuse * dot).scalar(irradiance);
+			float cosa = fmax(0, normal * surfaceNormal);
+			
+			c = c + (material.diffuse * cosa).scalar(irradiance);
+
+
+			Vec3f wi, wo, h;								//Specular
+			wi = scene.point_lights[lightIndex].position - intersectionPoint;
+			wo = camera.position - intersectionPoint;
+			h = (wi + wo).normalize();
+
+			float cosb = fmax(0, h * surfaceNormal);
+			c = c + (material.specular * pow(cosb, material.phong_exponent)).scalar(irradiance);
 
 		}
 		else{
