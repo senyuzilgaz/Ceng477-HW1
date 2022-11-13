@@ -14,8 +14,16 @@ using namespace std;
 
 namespace utilizer{
 
+	int colorClamp(float color){
+		if(color > 255)
+			return 255;
+		if(color < 0)
+			return 0;
+		return round(color + 0.5);
+	}
+	
 	Intersect intersectSphere(Ray ray, parser::Sphere sphere, vector<Vec3f> vertexData){
-		float A, B, C, delta, r; //constants for the quadratic equation		
+		float A, B, C, delta, r; //constants for the quadratic equation				
 		Vec3f c;
 		
 		c = vertexData[sphere.center_vertex_id -1];
