@@ -73,7 +73,6 @@ namespace utilizer{
 			if (info.isHit && info.t<minT && info.t>=0)
 			{
 				// can be replaced with any material property
-				cout << info.isHit;
 				minI = sphereIndex;
 				minT = info.t;
 				intersectionPoint = info.intersectPoint;
@@ -89,7 +88,7 @@ namespace utilizer{
 
 
 			line = scene.point_lights[lightIndex].position - intersectionPoint;
-			irradiance =  scene.point_lights[lightIndex].intensity / ( line * line);
+			irradiance = line * line != 0.0 ?  scene.point_lights[lightIndex].intensity / ( line * line): Vec3f(0,0,0);
 			normal = line.normalize();
 			float dot = normal * surfaceNormal;
 			if (dot < 0) dot = 0;
