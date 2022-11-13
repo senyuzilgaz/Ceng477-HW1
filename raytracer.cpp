@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
             for (int j = 0; j < width; ++j)
             {
                 Vec3f color;
-                ray = ray.generateRay(i, j, camera);
+                ray = ray.generateRay(j, i, camera);
                 color = calculateColor(ray, scene, 0);
                 image[pixel++] = colorClamp(color.x);
                 image[pixel++] = colorClamp(color.y);

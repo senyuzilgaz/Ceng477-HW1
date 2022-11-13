@@ -78,7 +78,7 @@ class Vec3f{
             return result;
         }
         Vec3f normalize(){
-            return *this * (1.0/sqrt(*this * *this));
+            return *this / sqrt(*this * *this);
         }
 
         Vec3f cross(Vec3f t){

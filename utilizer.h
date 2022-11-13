@@ -57,7 +57,7 @@ namespace utilizer{
 			if (t1 < t2) t = t1; else t = t2;
 		}
 		Vec3f ip = ray.origin + ray.direction*t;
-		Vec3f sn = (ip - c) / r;
+		Vec3f sn = ((ip - c)).normalize();
 		Intersect info = Intersect(true, t, ip, sn);
 
 		return info;
@@ -70,7 +70,7 @@ namespace utilizer{
 		for (int sphereIndex=0; sphereIndex<scene.spheres.size(); sphereIndex++)
 		{
 			Intersect info = intersectSphere(ray, scene.spheres[sphereIndex], scene.vertex_data);
-			if (info.isHit && info.t<minT && info.t>=0)
+			if (info.isHit && info.t<minT && info.t>0)
 			{
 				// can be replaced with any material property
 				minI = sphereIndex;
@@ -87,7 +87,7 @@ namespace utilizer{
 			c = c.scalar(scene.ambient_light);
 
 
-			line = scene.point_lights[lightIndex].position - intersectionPoint;
+			line = scene.point_lights[lightIndex].position - intersectionPoint  ;
 			irradiance = line * line != 0.0 ?  scene.point_lights[lightIndex].intensity / ( line * line): Vec3f(0,0,0);
 			normal = line.normalize();
 			float dot = normal * surfaceNormal;
