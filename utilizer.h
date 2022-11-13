@@ -58,47 +58,55 @@ namespace utilizer{
 		}
 		Vec3f ip = ray.origin + ray.direction*t;
 		Vec3f sn = (ip - c) / r;
-		Intersect info = new Intersect(true, t, ip, sn);
+		Intersect info = Intersect(true, t, ip, sn);
 
 		return info;
 	}
-	Vec3f calculateColor(Ray &ray, parser::Scene &scene){
-		int i, minI = -1;
-		Vec3f c, ip, n;
-		c.x = (float)scene.background_color.x;
-		c.y = (float)scene.background_color.y;
-		c.z = (float)scene.background_color.z;
+	Vec3f calculateColor(Ray &ray, parser::Scene &scene, int lightIndex){
+		int material, minI= -1;
+		Vec3f c, intersectionPoint, surfaceNormal, irradiance, diffuse, line, normal;
 		float t, minT = 90000; // some large number
-		Vec3f irradiance;
 		//Intersect with spheres
-		for (i=0; i<scene.spheres.size(); i++)
+		for (int sphereIndex=0; sphereIndex<scene.spheres.size(); sphereIndex++)
 		{
-			Intersect info = intersectSphere(ray, scene.spheres[i], scene.vertex_data);
-			t = info.t;
-			if (t<minT && t>=0)
+			Intersect info = intersectSphere(ray, scene.spheres[sphereIndex], scene.vertex_data);
+			if (info.isHit && info.t<minT && info.t>=0)
 			{
-				 // can be replaced with any material property
-				minI = i;
-				minT = t;
-				ip = info.intersectPoint;
+				// can be replaced with any material property
+				cout << info.isHit;
+				minI = sphereIndex;
+				minT = info.t;
+				intersectionPoint = info.intersectPoint;
+				surfaceNormal = info.surfaceNormal;
 			}
 		}
 
 		if (minI!=-1)
 		{
-			int material = scene.spheres[minI].material_id -1;
+			material = scene.spheres[minI].material_id -1; //Ambient
 			c = scene.materials[material].ambient;
 			c = c.scalar(scene.ambient_light);
-			Vec3f d = scene.point_lights[0].position - ip ;
-			irradiance = scene.point_lights[0].intensity/ ( d * d);
-			Vec3f dnormal = d.normalize();
-			float dot = dnormal * d;
+
+
+			line = scene.point_lights[lightIndex].position - intersectionPoint;
+			irradiance =  scene.point_lights[lightIndex].intensity / ( line * line);
+			normal = line.normalize();
+			float dot = normal * surfaceNormal;
 			if (dot < 0) dot = 0;
-			c = c +(scene.materials[material].diffuse * dot).scalar(irradiance);
+			c = c + (scene.materials[material].diffuse * dot).scalar(irradiance);
 
 		}
-		return c;
-	}
+		else{
+			c.x = (float)scene.background_color.x;
+			c.y = (float)scene.background_color.y;
+			c.z = (float)scene.background_color.z;
+		}
+		return c;	
+	}		
+		
+
+		
+	
 }
 
 #endif

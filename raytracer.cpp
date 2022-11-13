@@ -37,10 +37,11 @@ int main(int argc, char* argv[])
             {
                 Vec3f color;
                 ray = ray.generateRay(i, j, camera);
-                color = calculateColor(ray, scene);
+                color = calculateColor(ray, scene, 0);
                 image[pixel++] = colorClamp(color.x);
                 image[pixel++] = colorClamp(color.y);
                 image[pixel++] = colorClamp(color.z);
+
             }
         }
         const char * outputFileName = camera.image_name.c_str();
