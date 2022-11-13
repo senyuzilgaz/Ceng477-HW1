@@ -20,7 +20,7 @@ namespace utilizer{
 		
 		Vec3f c;
 		
-		c = vertexData[sphere.center_vertex_id];
+		c = vertexData[sphere.center_vertex_id -1];
 		
 		float t,t1,t2;
 		
@@ -43,10 +43,9 @@ namespace utilizer{
 			A = 2 * A;
 			t1 = (-B + delta) / A;
 			
-			// t2 = (-B - delta) / A;
-			t = t1;
+			t2 = (-B - delta) / A;
 			// t1 is actually always less than t2
-			// if (t1 < t2) t = t1; else t = t2;
+			if (t1 < t2) t = t1; else t = t2;
 		}
 		
 		return t;
@@ -54,14 +53,16 @@ namespace utilizer{
 	Vec3f calculateColor(Ray &ray, parser::Scene &scene){
 		int i, minI = -1;
 		Vec3f c, L, N, P;
+		c.x = (float)scene.background_color.x;
+		c.y = (float)scene.background_color.y;
+		c.z = (float)scene.background_color.z;
 		float t, minT = 90000; // some large number
 		for (i=0; i<scene.spheres.size(); i++)
 		{
 			t = intersectSphere(ray, scene.spheres[i], scene.vertex_data);
 			if (t<minT && t>=0)
 			{
-				int material = scene.spheres[i].material_id;
-				c = scene.materials[material].ambient ; // can be replaced with any material property
+				 // can be replaced with any material property
 				minI = i;
 				minT = t;
 			}
@@ -69,19 +70,9 @@ namespace utilizer{
 
 		if (minI!=-1)
 		{
-
-			P = ray.origin + (ray.direction * minT);
-			L = scene.ambient_light - P;
-			N = P - scene.vertex_data[scene.spheres[minI].center_vertex_id];
-			L = L.normalize();
-			N = N.normalize();
-			c = Vec3f(255,0,0);
-		}
-		else{
-			
-			c.x = (float)scene.ambient_light.x;
-			c.y = (float)scene.ambient_light.y;
-			c.z = (float)scene.ambient_light.z;
+			int material = scene.spheres[minI].material_id -1;
+			c = scene.materials[material].ambient;
+			c = c.scalar(scene.ambient_light);
 		}
 		return c;
 	}

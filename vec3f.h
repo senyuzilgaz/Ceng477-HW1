@@ -92,6 +92,9 @@ class Vec3f{
 
             return Vec3f(a, b, c);
         }
+        Vec3f scalar(Vec3f a){
+            return(Vec3f(x*a.x, y*a.y, z*a.z));
+        }
 
         friend ostream& operator<<(ostream& os, Vec3f &x)
         {

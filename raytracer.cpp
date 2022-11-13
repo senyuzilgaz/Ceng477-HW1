@@ -21,11 +21,7 @@ int main(int argc, char* argv[])
     // Sample usage for reading an XML scene file
     parser::Scene scene;
     scene.loadFromXml(argv[1]);
-    int material =scene.spheres[0].material_id-1;
-    cout << material<<endl;
-    cout<<scene.materials[material].ambient;
     vector<parser::Camera> cameras;
-    vector<Vec3f> fistik = scene.vertex_data;
     cameras = scene.cameras;
     for(auto camera : cameras){
         int width = camera.image_width;
@@ -42,9 +38,9 @@ int main(int argc, char* argv[])
                 Vec3f color;
                 ray = ray.generateRay(i, j, camera);
                 color = calculateColor(ray, scene);
-                image[pixel++] = round(color.x);
-                image[pixel++] = round(color.y);
-                image[pixel++] = round(color.z);
+                image[pixel++] = color.x;
+                image[pixel++] = color.y;
+                image[pixel++] = color.z;
             }
         }
         const char * outputFileName = camera.image_name.c_str();
