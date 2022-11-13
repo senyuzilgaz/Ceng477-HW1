@@ -22,6 +22,13 @@ namespace utilizer{
 		return round(color + 0.5);
 	}
 
+	float determinant(Vec3f a, Vec3f b, Vec3f c){
+		float det = a.x * (b.y * c.z - c.y * b.z) 
+		          + a.y * (c.x * b.z - b.x * c.z)
+				  + a.z * (b.x * c.y - b.y * c.x);
+		return det;
+	}	
+
 	Vec3f calculateAmbiance(parser::Material material, Vec3f ambientLight){
 		return material.ambient.scalar(ambientLight);
 	}
@@ -77,37 +84,88 @@ namespace utilizer{
 			// t1 is actually always less than t2
 			if (t1 < t2) t = t1; else t = t2;
 		}
-		Vec3f ip = ray.origin + ray.direction*t;
-		Vec3f sn = ((ip - c)).normalize();
-		Intersect info = Intersect(true, t, ip, sn);
+		Vec3f intersectionPoint = ray.origin + ray.direction*t;
+		Vec3f surfaceNormal = ((intersectionPoint - c)).normalize();
+		Intersect info = Intersect(true, t, intersectionPoint, surfaceNormal);
 
 		return info;
 	}
+
+	Intersect intersectTriangle(Ray ray, parser::Face face, vector<Vec3f> vertexData){
+		Vec3f a = vertexData[face.v0_id - 1];
+		Vec3f b = vertexData[face.v1_id - 1];
+		Vec3f c = vertexData[face.v2_id - 1];
+
+		float detA = determinant(a - b, a - c, ray.direction);
+		if(detA == 0) return Intersect(false);
+
+		float t = determinant(a - b, a - c, a - ray.origin) / detA;
+		float gamma = determinant(a - b, a - ray.origin, ray.direction) / detA;
+		float beta = determinant(a - ray.origin, a - c, ray.direction) / detA;
+
+		if(t > 0 && beta + gamma <= 1 && 0 <= beta && 0 <= gamma){
+			Vec3f intersectionPoint = ray.origin + ray.direction*t;
+			Vec3f surfaceNormal = (b - a).cross(c - a).normalize(); 
+			Intersect info = Intersect(true, t, intersectionPoint, surfaceNormal);
+
+			return info;
+		}
+
+		return Intersect(false);
+
+	}
+
 	Vec3f calculateColor(Ray &ray, parser::Scene &scene, parser::Camera &camera){
-		int material, minI= -1;
+		int material, minI= -1, materialId = -1;
 		Vec3f color, intersectionPoint, surfaceNormal, ambient, diffuse, specular;
 		float t, minT = 90000; // some large number
 		//Intersect with spheres
 		vector <parser::PointLight> pointLights = scene.point_lights;
+		auto vertexData = scene.vertex_data;
 		
 		for(int indexLight = 0; indexLight < pointLights.size(); indexLight++){
 		
-			for (int sphereIndex=0; sphereIndex<scene.spheres.size(); sphereIndex++)
+			for (int sphereIndex = 0; sphereIndex<scene.spheres.size(); sphereIndex++)
 			{
-				Intersect info = intersectSphere(ray, scene.spheres[sphereIndex], scene.vertex_data);
-				if (info.isHit && info.t<minT && info.t>0)
+				Intersect info = intersectSphere(ray, scene.spheres[sphereIndex], vertexData);
+				if (info.isHit && info.t < minT && info.t>0)
 				{
-					minI = sphereIndex;
 					minT = info.t;
+					materialId = scene.spheres[sphereIndex].material_id -1;
 					intersectionPoint = info.intersectPoint;
 					surfaceNormal = info.surfaceNormal;
 				}
 			}
 
-			if (minI!=-1)
+			for(int triangleIndex = 0; triangleIndex < scene.triangles.size(); ++triangleIndex)
 			{
-				int temp = scene.spheres[minI].material_id -1; //Ambient
-				auto material = scene.materials[temp];
+				Intersect info = intersectTriangle(ray, scene.triangles[triangleIndex].indices, vertexData);
+
+				if(info.isHit && info.t < minT && info.t>0){
+					minT = info.t;
+					materialId = scene.triangles[triangleIndex].material_id -1;
+					intersectionPoint = info.intersectPoint;
+					surfaceNormal = info.surfaceNormal;
+				}
+			}
+
+			for(int meshIndex = 0; meshIndex < scene.meshes.size(); ++meshIndex){
+				
+				parser::Mesh mesh = scene.meshes[meshIndex];
+				for(int faceIndex = 0; faceIndex < mesh.faces.size(); ++ faceIndex){
+					Intersect info = intersectTriangle(ray, mesh.faces[faceIndex], vertexData);
+					if(info.isHit && info.t < minT && info.t>0){
+						minT = info.t;
+						materialId = scene.meshes[meshIndex].material_id -1;
+						intersectionPoint = info.intersectPoint;
+						surfaceNormal = info.surfaceNormal;
+					}					
+				}
+			}
+
+			if (materialId!=-1)
+			{
+				auto material = scene.materials[materialId];
 				auto pointLight = scene.point_lights[indexLight];
 				Vec3f ambientLight = scene.ambient_light;
 				
@@ -124,7 +182,9 @@ namespace utilizer{
 							(float)scene.background_color.y, 
 							(float)scene.background_color.z);
 			}
-			
+
+			materialId = -1;
+			minT = 90000;
 		}		
 		return color;		
 	}

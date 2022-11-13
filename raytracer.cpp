@@ -26,7 +26,6 @@ int main(int argc, char* argv[])
     cameras = scene.cameras;
 
 
-
     
 
         for(auto camera : cameras){
