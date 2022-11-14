@@ -14,7 +14,7 @@ using namespace std;
 
 namespace utilizer{
 
-	int colorClamp(float color){
+	int colorClamp(float &color){
 		if(color > 255)
 			return 255;
 		if(color < 0)
@@ -29,17 +29,17 @@ namespace utilizer{
 		return det;
 	}	
 
-	Vec3f calculateAmbiance(parser::Material material, Vec3f ambientLight){
+	Vec3f calculateAmbiance(parser::Material& material, Vec3f& ambientLight){
 		return material.ambient.scalar(ambientLight);
 	}
-	Vec3f calculateDiffuse(parser::Material material, parser::PointLight pointLight, Vec3f intersectionPoint, Vec3f surfaceNormal){
+	Vec3f calculateDiffuse(parser::Material &material, parser::PointLight &pointLight, Vec3f& intersectionPoint, Vec3f& surfaceNormal){
 			Vec3f line = pointLight.position - intersectionPoint; //Diffuse
 			Vec3f irradiance = line * line != 0.0 ?  pointLight.intensity / ( line * line): Vec3f(0,0,0);
 			Vec3f normal = line.normalize();
 			float cosa = fmax(0, normal * surfaceNormal);
 			return (material.diffuse * cosa).scalar(irradiance);
 	}
-	Vec3f calculateSpecular(parser::Material material, parser::PointLight pointLight, Vec3f intersectionPoint, Vec3f surfaceNormal, Vec3f cameraPosition){
+	Vec3f calculateSpecular(parser::Material& material, parser::PointLight &pointLight, Vec3f& intersectionPoint, Vec3f& surfaceNormal, Vec3f& cameraPosition){
 			Vec3f wi, wo, h;
 			Vec3f line = pointLight.position - intersectionPoint; 
 			Vec3f irradiance = line * line != 0.0 ?  pointLight.intensity / ( line * line): Vec3f(0,0,0);
@@ -52,7 +52,7 @@ namespace utilizer{
 	}
 
 	
-	Intersect intersectSphere(Ray ray, parser::Sphere sphere, vector<Vec3f> vertexData){
+	Intersect intersectSphere(Ray& ray, parser::Sphere &sphere, vector<Vec3f>& vertexData){
 		float A, B, C, delta, r; //constants for the quadratic equation				
 		Vec3f c;
 		
@@ -91,7 +91,7 @@ namespace utilizer{
 		return info;
 	}
 
-	Intersect intersectTriangle(Ray ray, parser::Face face, vector<Vec3f> vertexData){
+	Intersect intersectTriangle(Ray &ray, parser::Face& face, vector<Vec3f>& vertexData){
 		Vec3f a = vertexData[face.v0_id - 1];
 		Vec3f b = vertexData[face.v1_id - 1];
 		Vec3f c = vertexData[face.v2_id - 1];
