@@ -21,6 +21,7 @@ class Ray{
         parser::Camera camera;
     public:
         Vectors::Vec3f origin, direction;
+        bool isShadowRay;
             
         Ray(parser::Camera &camera){
             origin = Vec3f(0, 0, 0);
@@ -42,6 +43,11 @@ class Ray{
             m = cameraPos + (gaze * d);
             q = m + (u * left) + (v * top);
         }
+        Ray(Vec3f origin, Vec3f direction){
+            this -> origin = origin;
+            this -> direction = direction;
+            isShadowRay = true;
+        }
         Ray generateRay(int i, int j, parser::Camera &camera){
             float su = (i + 0.5) * (right - left) / width;
             float sv = (j + 0.5) * (top - bottom) / height;
@@ -50,6 +56,7 @@ class Ray{
 
             origin = cameraPos;
             direction = s - cameraPos;
+            isShadowRay = false;
 
             return *this;
         }
