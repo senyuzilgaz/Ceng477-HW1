@@ -6,6 +6,8 @@
 #include "Ray.h"
 #include<string>
 #include "utilizer.h"
+#include <chrono>
+using namespace std::chrono;
 
 using namespace utilizer;
 using namespace std;
@@ -18,6 +20,7 @@ typedef unsigned char RGB[3];
 
 int main(int argc, char* argv[])
 {
+    auto start = high_resolution_clock::now();
     // Sample usage for reading an XML scene file
     parser::Scene scene;
     scene.loadFromXml(argv[1]);
@@ -52,6 +55,9 @@ int main(int argc, char* argv[])
             const char * outputFileName = camera.image_name.c_str();
             write_ppm(outputFileName, image, width, height);
         }
+        auto stop = high_resolution_clock::now();
+        auto duration = duration_cast<seconds>(stop - start);
+        cout << "Execution Time: " << duration.count() << " seconds " << endl;
     
 
 }
