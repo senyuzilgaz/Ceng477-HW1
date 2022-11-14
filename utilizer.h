@@ -114,17 +114,8 @@ namespace utilizer{
 		return Intersect(false);
 
 	}
-
-	Vec3f calculateColor(Ray &ray, parser::Scene &scene, parser::Camera &camera){
-		int material, minI= -1, materialId = -1;
-		Vec3f color, intersectionPoint, surfaceNormal, ambient, diffuse, specular;
-		float t, minT = 90000; // some large number
-		//Intersect with spheres
-		vector <parser::PointLight> pointLights = scene.point_lights;
-		auto vertexData = scene.vertex_data;
-		
-		for(int indexLight = 0; indexLight < pointLights.size(); indexLight++){
-		
+	void findIntersection(Vec3f &intersectionPoint, Vec3f &surfaceNormal, int &materialId, Ray &ray, 
+																vector<Vec3f> &vertexData, parser::Scene &scene, float &minT){
 			for (int sphereIndex = 0; sphereIndex<scene.spheres.size(); sphereIndex++)
 			{
 				Intersect info = intersectSphere(ray, scene.spheres[sphereIndex], vertexData);
@@ -162,20 +153,32 @@ namespace utilizer{
 					}					
 				}
 			}
+	}
+
+	Vec3f calculateColor(Ray &ray, parser::Scene &scene, parser::Camera &camera){
+		int material, minI= -1, materialId = -1;
+		Vec3f color, intersectionPoint, surfaceNormal, ambient, diffuse, specular;
+		float t, minT = 90000, tPointLight; // some large number
+		bool isInShadow = false;
+		//Intersect with spheres
+		vector <parser::PointLight> pointLights = scene.point_lights;
+		auto vertexData = scene.vertex_data;
+
+		for(int indexLight = 0; indexLight < pointLights.size(); indexLight++){
+			auto pointLight = scene.point_lights[indexLight];
+			
+			findIntersection(intersectionPoint, surfaceNormal, materialId, ray, vertexData, scene, minT);
 
 			if (materialId!=-1)
 			{
 				auto material = scene.materials[materialId];
-				auto pointLight = scene.point_lights[indexLight];
 				Vec3f ambientLight = scene.ambient_light;
-				
 				
 				ambient = calculateAmbiance(material, ambientLight);
 				diffuse = calculateDiffuse(material, pointLight, intersectionPoint, surfaceNormal);
 				specular = calculateSpecular(material, pointLight, intersectionPoint, surfaceNormal, camera.position);
 
 				color = color + ambient + diffuse + specular;
-
 			}
 			else{
 				color = Vec3f((float)scene.background_color.x, 
