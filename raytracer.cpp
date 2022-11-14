@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
                 {
                     Vec3f color;
                     ray = ray.generateRay(j, i, camera);
-                    color = calculateColor(ray, scene, camera);
+                    color = calculateColor(ray, scene, camera, scene.max_recursion_depth);
                     image[pixel++] = colorClamp(color.x);
                     image[pixel++] = colorClamp(color.y);
                     image[pixel++] = colorClamp(color.z);
