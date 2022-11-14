@@ -115,7 +115,7 @@ namespace utilizer{
 
 	}
 	bool findIntersection(Ray &ray, vector<Vec3f> &vertexData, parser::Scene &scene, Vec3f &intersectionPoint, Vec3f &surfaceNormal, 
-																											int &materialId, float &minT, int &shapeIndex, int &shape ){
+																											int &materialId, float &minT ){
 
 			for (int sphereIndex = 0; sphereIndex<scene.spheres.size(); sphereIndex++)
 			{			
@@ -124,8 +124,6 @@ namespace utilizer{
 				{
 					minT = info.t;
 					materialId = scene.spheres[sphereIndex].material_id -1;
-					shapeIndex = sphereIndex;
-					shape = 0;
 					intersectionPoint = info.intersectPoint;
 					surfaceNormal = info.surfaceNormal;
 				}
@@ -138,8 +136,6 @@ namespace utilizer{
 				if(info.isHit && info.t < minT && info.t>0){
 					minT = info.t;
 					materialId = scene.triangles[triangleIndex].material_id -1;
-					shapeIndex = triangleIndex;
-					shape = 1;
 					intersectionPoint = info.intersectPoint;
 					surfaceNormal = info.surfaceNormal;
 				}
@@ -153,8 +149,6 @@ namespace utilizer{
 					if(info.isHit && info.t < minT && info.t>0){
 						minT = info.t;
 						materialId = scene.meshes[meshIndex].material_id -1;
-						shapeIndex = faceIndex;
-						shape = 2;
 						intersectionPoint = info.intersectPoint;
 						surfaceNormal = info.surfaceNormal;
 					}					
@@ -167,7 +161,7 @@ namespace utilizer{
 	Vec3f calculateColor(Ray &ray, parser::Scene &scene, parser::Camera &camera, int recursionDepth){
 		int material, minI= -1, materialId = -1, placeholderI, shapeIndex, shape, placeholder;
 		Vec3f color, intersectionPoint, surfaceNormal, ambient, diffuse, specular, placeholderV;
-		float t, minT = 90000, tPointLight, placeholderF; // some large number
+		float t, minT = 90000, tPointLight, placeholderF, tMinLight; // some large number
 		bool isIntersected = false, isInShadow = false;
 		//Intersect with spheres
 		vector <parser::PointLight> pointLights = scene.point_lights;
@@ -176,13 +170,17 @@ namespace utilizer{
 		for(int indexLight = 0; indexLight < pointLights.size(); indexLight++){
 			auto pointLight = scene.point_lights[indexLight];
 			
-			isIntersected = findIntersection(ray, vertexData, scene, intersectionPoint, surfaceNormal, materialId, minT, shapeIndex, shape);
+			isIntersected = findIntersection(ray, vertexData, scene, intersectionPoint, surfaceNormal, materialId, minT);
 
 			if (isIntersected){
 				Vec3f wi = pointLight.position - intersectionPoint;
 				wi = wi.normalize();
 				Ray shadowRay(intersectionPoint + wi * scene.shadow_ray_epsilon, wi, true); //origin, direction
-				isInShadow = findIntersection(shadowRay, vertexData, scene, placeholderV, placeholderV, placeholderI = -1, placeholderF = 90000, placeholder, placeholder);
+				isInShadow = findIntersection(shadowRay, vertexData, scene, placeholderV, placeholderV, placeholderI = -1, tMinLight = 90000);
+				tPointLight = (pointLight.position - shadowRay.origin).x / shadowRay.direction.x;
+				if(tMinLight > tPointLight || tPointLight < 0){
+					isInShadow = false;
+				}
 			}
 			if (isIntersected)
 			{
@@ -200,7 +198,7 @@ namespace utilizer{
 					color = color + calculateSpecular(material, pointLight, intersectionPoint, surfaceNormal, ray.direction);
 
 					if(recursionDepth > 0 && material.is_mirror && minT != 90000 && minT >0){
-						Vec3f wo = (camera.position - intersectionPoint).normalize();
+						Vec3f wo = (ray.direction * -1).normalize();
 						Vec3f wr = ((surfaceNormal * 2) * (surfaceNormal * wo) -wo).normalize();
 						Ray reflectionRay(intersectionPoint + wr * scene.shadow_ray_epsilon, wr, false);
 						reflection = calculateColor(reflectionRay, scene, camera, recursionDepth-1);
