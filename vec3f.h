@@ -11,13 +11,13 @@ namespace Vectors{
 
 class Vec3f{
     public:
-        float x, y, z;
+        double x, y, z;
         Vec3f(){
             x=0;
             y=0;
             z=0;
         }        
-        Vec3f(float a, float b, float c){
+        Vec3f(double a, double b, double c){
             x=a;
             y=b;
             z=c;
@@ -37,7 +37,7 @@ class Vec3f{
 
             return *this;
         }
-        Vec3f operator/(float a){
+        Vec3f operator/(double a){
             Vec3f result;
             result.x = x / a;
             result.y = y / a;
@@ -52,8 +52,8 @@ class Vec3f{
             result.z = z - a.z;
             return result;
         }        
-        float operator*(Vec3f a){
-            float result = x * a.x + y * a.y + z * a.z;
+        double operator*(Vec3f a){
+            double result = x * a.x + y * a.y + z * a.z;
             return result;
         }
         Vec3f operator*(double a){
@@ -70,21 +70,14 @@ class Vec3f{
             result.z = z * a;
             return result;
         }
-        Vec3f operator*(float a){
-            Vec3f result;
-            result.x = x * a;
-            result.y = y * a;
-            result.z = z * a;
-            return result;
-        }
         Vec3f normalize(){
             return *this / sqrt(*this * *this);
         }
 
         Vec3f cross(Vec3f t){
-            float a = y * t.z - z * t.y;
-            float b = z * t.x - x * t.z;
-            float c = x * t.y - y * t.x;   
+            double a = y * t.z - z * t.y;
+            double b = z * t.x - x * t.z;
+            double c = x * t.y - y * t.x;   
 
             return Vec3f(a, b, c);
         }

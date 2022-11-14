@@ -14,16 +14,16 @@ using namespace std;
 
 namespace utilizer{
 
-	int colorClamp(float &color){
+	int colorClamp(double &color){
 		if(color > 255)
 			return 255;
 		if(color < 0)
-			return 0;
-		return round(color + 0.5);
+			return 0;  
+		return round(min(255.0, round(color + 0.5)));
 	}
 
-	float determinant(Vec3f a, Vec3f b, Vec3f c){
-		float det = a.x * (b.y * c.z - c.y * b.z) 
+	double determinant(Vec3f a, Vec3f b, Vec3f c){
+		double det = a.x * (b.y * c.z - c.y * b.z) 
 		          + a.y * (c.x * b.z - b.x * c.z)
 				  + a.z * (b.x * c.y - b.y * c.x);
 		return det;
@@ -36,7 +36,7 @@ namespace utilizer{
 			Vec3f line = pointLight.position - intersectionPoint; //Diffuse
 			Vec3f irradiance = line * line != 0.0 ?  pointLight.intensity / ( line * line): Vec3f(0,0,0);
 			Vec3f normal = line.normalize();
-			float cosa = fmax(0, normal * surfaceNormal);
+			double cosa = fmax(0, normal * surfaceNormal);
 			return (material.diffuse * cosa).scalar(irradiance);
 	}
 	Vec3f calculateSpecular(parser::Material& material, parser::PointLight &pointLight, Vec3f& intersectionPoint, Vec3f& surfaceNormal, Vec3f& rayDirection){
@@ -47,19 +47,19 @@ namespace utilizer{
             wi = wi.normalize();
             h = (wi - rayDirection).normalize();
 
-            float cosb = fmax(0,h * surfaceNormal);
+            double cosb = fmax(0,h * surfaceNormal);
             return (material.specular * pow(cosb, material.phong_exponent)).scalar(irradiance);
 	}
 
 	
 	Intersect intersectSphere(Ray& ray, parser::Sphere &sphere, vector<Vec3f>& vertexData){
-		float A, B, C, delta, r; //constants for the quadratic equation				
+		double A, B, C, delta, r; //constants for the quadratic equation				
 		Vec3f c;
 		
 		c = vertexData[sphere.center_vertex_id -1];
 		r = sphere.radius;
 
-		float t, t1, t2;
+		double t, t1, t2;
 		
 		C = (ray.origin.x-c.x)*(ray.origin.x-c.x)+(ray.origin.y-c.y)*(ray.origin.y-c.y)+(ray.origin.z-c.z)*(ray.origin.z-c.z)-sphere.radius*sphere.radius;
 		B = 2*ray.direction.x*(ray.origin.x-c.x)+2*ray.direction.y*(ray.origin.y-c.y)+2*ray.direction.z*(ray.origin.z-c.z);
@@ -96,12 +96,12 @@ namespace utilizer{
 		Vec3f b = vertexData[face.v1_id - 1];
 		Vec3f c = vertexData[face.v2_id - 1];
 
-		float detA = determinant(a - b, a - c, ray.direction);
+		double detA = determinant(a - b, a - c, ray.direction);
 		if(detA == 0) return Intersect(false);
 
-		float t = determinant(a - b, a - c, a - ray.origin) / detA;
-		float gamma = determinant(a - b, a - ray.origin, ray.direction) / detA;
-		float beta = determinant(a - ray.origin, a - c, ray.direction) / detA;
+		double t = determinant(a - b, a - c, a - ray.origin) / detA;
+		double gamma = determinant(a - b, a - ray.origin, ray.direction) / detA;
+		double beta = determinant(a - ray.origin, a - c, ray.direction) / detA;
 
 		if(t > 0 && beta + gamma <= 1 && 0 <= beta && 0 <= gamma){
 			Vec3f intersectionPoint = ray.origin + ray.direction*t;
@@ -115,7 +115,7 @@ namespace utilizer{
 
 	}
 	bool findIntersection(Ray &ray, vector<Vec3f> &vertexData, parser::Scene &scene, Vec3f &intersectionPoint, Vec3f &surfaceNormal, 
-																											int &materialId, float &minT ){
+																											int &materialId, double &minT ){
 
 			for (int sphereIndex = 0; sphereIndex<scene.spheres.size(); sphereIndex++)
 			{			
@@ -161,7 +161,7 @@ namespace utilizer{
 	Vec3f calculateColor(Ray &ray, parser::Scene &scene, parser::Camera &camera, int recursionDepth){
 		int material, minI= -1, materialId = -1, placeholderI, shapeIndex, shape, placeholder;
 		Vec3f color, intersectionPoint, surfaceNormal, ambient, diffuse, specular, placeholderV;
-		float t, minT = 90000, tPointLight, placeholderF, tMinLight; // some large number
+		double t, minT = 90000, tPointLight, placeholderF, tMinLight; // some large number
 		bool isIntersected = false, isInShadow = false;
 		//Intersect with spheres
 		vector <parser::PointLight> pointLights = scene.point_lights;
@@ -169,6 +169,7 @@ namespace utilizer{
 
 		for(int indexLight = 0; indexLight < pointLights.size(); indexLight++){
 			auto pointLight = scene.point_lights[indexLight];
+
 			
 			isIntersected = findIntersection(ray, vertexData, scene, intersectionPoint, surfaceNormal, materialId, minT);
 
@@ -192,24 +193,25 @@ namespace utilizer{
 					color = color + calculateAmbiance(material, ambientLight);
 				}				
 				if(!isInShadow){
-					Vec3f reflection;
-					
 					color = color + calculateDiffuse(material, pointLight, intersectionPoint, surfaceNormal);
 					color = color + calculateSpecular(material, pointLight, intersectionPoint, surfaceNormal, ray.direction);
-
-					if(recursionDepth > 0 && material.is_mirror && minT != 90000 && minT >0){
+					if(recursionDepth > 0 && material.is_mirror){
+						Vec3f reflection;
 						Vec3f wo = (ray.direction * -1).normalize();
 						Vec3f wr = ((surfaceNormal * 2) * (surfaceNormal * wo) -wo).normalize();
-						Ray reflectionRay(intersectionPoint + wr * scene.shadow_ray_epsilon, wr, false);
+						Ray reflectionRay(intersectionPoint + surfaceNormal * scene.shadow_ray_epsilon, wr, false);
 						reflection = calculateColor(reflectionRay, scene, camera, recursionDepth-1);
+						color = color + scene.materials[materialId].mirror.scalar(reflection);
 					}
-					color = color + scene.materials[materialId].mirror.scalar(reflection);
 				}
 			}
+			else if(recursionDepth == scene.max_recursion_depth){
+				color = Vec3f((double)scene.background_color.x, 
+							(double)scene.background_color.y, 
+							(double)scene.background_color.z);
+			}
 			else{
-				color = Vec3f((float)scene.background_color.x, 
-							(float)scene.background_color.y, 
-							(float)scene.background_color.z);
+				color = Vec3f();
 			}
 
 			materialId = -1;

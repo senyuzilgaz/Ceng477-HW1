@@ -46,7 +46,7 @@ class Ray{
         }
         Ray(Vec3f origin, Vec3f direction, bool isShadow){
             this -> origin = origin;
-            this -> direction = direction;
+            this -> direction = direction.normalize();
             isShadowRay = isShadow;
         }
 
@@ -58,6 +58,7 @@ class Ray{
 
             origin = cameraPos;
             direction = s - cameraPos;
+            direction = direction.normalize();
 
             return *this;
         }
