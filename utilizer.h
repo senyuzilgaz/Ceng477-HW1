@@ -187,10 +187,15 @@ namespace utilizer{
 			if (isIntersected)
 			{
 				auto material = scene.materials[materialId];
+				
 				Vec3f ambientLight = scene.ambient_light;
-				color = color + calculateAmbiance(material, ambientLight);
+
+				if(recursionDepth == scene.max_recursion_depth){
+					color = color + calculateAmbiance(material, ambientLight);
+				}				
 				if(!isInShadow){
 					Vec3f reflection;
+					
 					color = color + calculateDiffuse(material, pointLight, intersectionPoint, surfaceNormal);
 					color = color + calculateSpecular(material, pointLight, intersectionPoint, surfaceNormal, ray.direction);
 
