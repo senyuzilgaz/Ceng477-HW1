@@ -116,16 +116,12 @@ namespace utilizer{
 	}
 	bool findIntersection(Ray &ray, vector<Vec3f> &vertexData, parser::Scene &scene, Vec3f &intersectionPoint, Vec3f &surfaceNormal, 
 																											int &materialId, float &minT){
-			if(ray.isShadowRay)
-				cout << ray.origin << "  " << ray.direction << endl;
+
 			for (int sphereIndex = 0; sphereIndex<scene.spheres.size(); sphereIndex++)
-			{	
-				
+			{			
 				Intersect info = intersectSphere(ray, scene.spheres[sphereIndex], vertexData);
 				if (info.isHit && info.t < minT && info.t>0)
 				{
-					if(ray.isShadowRay)
-						cout << "OMG" << endl;
 					minT = info.t;
 					materialId = scene.spheres[sphereIndex].material_id -1;
 					intersectionPoint = info.intersectPoint;
@@ -180,7 +176,7 @@ namespace utilizer{
 				Vec3f wi = pointLight.position - intersectionPoint;
 				wi = wi.normalize();
 				Ray shadowRay(intersectionPoint + wi * scene.shadow_ray_epsilon, wi); //origin, direction
-				isInShadow = findIntersection(shadowRay, vertexData, scene, placeholderV, placeholderV, placeholderI = -1, placeholderF);
+				isInShadow = findIntersection(shadowRay, vertexData, scene, placeholderV, placeholderV, placeholderI = -1, placeholderF = 90000);
 			}
 			if (isIntersected)
 			{

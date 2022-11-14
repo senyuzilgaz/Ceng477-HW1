@@ -24,6 +24,7 @@ class Ray{
         bool isShadowRay;
             
         Ray(parser::Camera &camera){
+            isShadowRay = false;
             origin = Vec3f(0, 0, 0);
             direction = Vec3f(0, 0, 0);
             d = camera.near_distance;
@@ -56,7 +57,6 @@ class Ray{
 
             origin = cameraPos;
             direction = s - cameraPos;
-            isShadowRay = false;
 
             return *this;
         }
