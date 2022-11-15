@@ -4,12 +4,11 @@
 #include "ppm.h"
 #include "vec3f.h"
 #include "Ray.h"
-#include<string>
+#include <string>
 #include "utilizer.h"
 #include <chrono>
 using namespace std::chrono;
 
-using namespace utilizer;
 using namespace std;
 using namespace Vectors;
 using namespace Rays;

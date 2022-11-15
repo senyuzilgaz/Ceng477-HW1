@@ -6,6 +6,7 @@
 #include <math.h>
 #include "parser.h"
 
+
 using namespace std;
 namespace Vectors{
 
